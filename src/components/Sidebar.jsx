@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../Authentication";
 
 const linkClasses = ({ isActive }) =>
   "block rounded-lg px-3 py-2 text-sm font-medium " +
@@ -7,6 +8,14 @@ const linkClasses = ({ isActive }) =>
     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50");
 
 export default function Sidebar() {
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+
+  function handleSignOut() {
+    signOut();
+    navigate("/"); // back to Home
+  }
+
   return (
     <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 border-r border-slate-200 bg-white">
       <div className="h-16 flex items-center px-4 border-b border-slate-200">
@@ -25,9 +34,14 @@ export default function Sidebar() {
         </NavLink>
       </nav>
 
-      <div className="mt-auto p-3 border-t border-slate-200">
-        {/* Placeholder sign‑out for later */}
-        <button className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">
+      <div className="mt-auto p-3 border-t border-slate-200 space-y-2">
+        <div className="text-xs text-slate-500 px-1">
+          Signed in as <span className="font-medium">{user?.username}</span>
+        </div>
+        <button
+          onClick={handleSignOut}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50"
+        >
           Sign out
         </button>
       </div>

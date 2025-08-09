@@ -5,6 +5,7 @@ import Dashboard from "./routes/Dashboard.jsx";
 import Lessons from "./routes/Lessons.jsx";
 import Profile from "./routes/Profile.jsx";
 import Layout from "./components/Layout.jsx";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 export default function App() {
   return (
@@ -14,10 +15,12 @@ export default function App() {
       <Route path="/auth" element={<Auth />} />
 
       {/* App pages with sidebar layout */}
-      <Route element={<Layout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/lessons" element={<Lessons />} />
-        <Route path="/profile" element={<Profile />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/lessons" element={<Lessons />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
       </Route>
 
       {/* Optional: a 404 later */}
