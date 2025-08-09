@@ -1,21 +1,42 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { Routes, Route, Link } from "react-router-dom";
+import Home from "./routes/Home.jsx";
+import Auth from "./routes/Auth.jsx";
+import Dashboard from "./routes/Dashboard.jsx";
+import Lessons from "./routes/Lessons.jsx";
+import Profile from "./routes/Profile.jsx";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
-        <h1 className="text-2xl font-semibold">Level‑Up Learning</h1>
-        <p className="text-slate-600 mt-2">
-          Tailwind is installed and working ✅
-        </p>
-        <button className="mt-6 inline-flex items-center rounded-xl px-4 py-2 border border-slate-300 hover:bg-slate-50">
-          Continue
-        </button>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Simple header nav just to move around for now */}
+      <header className="bg-white border-b border-slate-200">
+        <nav className="max-w-5xl mx-auto px-4 py-3 flex gap-4">
+          <Link className="text-slate-700 hover:text-slate-900" to="/">
+            Home
+          </Link>
+          <Link className="text-slate-700 hover:text-slate-900" to="/auth">
+            Auth
+          </Link>
+          <Link className="text-slate-700 hover:text-slate-900" to="/dashboard">
+            Dashboard
+          </Link>
+          <Link className="text-slate-700 hover:text-slate-900" to="/lessons">
+            Lessons
+          </Link>
+          <Link className="text-slate-700 hover:text-slate-900" to="/profile">
+            Profile
+          </Link>
+        </nav>
+      </header>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/lessons" element={<Lessons />} />
+        <Route path="/profile" element={<Profile />} />
+        {/* Optional: a 404 later */}
+      </Routes>
     </div>
   );
 }
-export default App;
