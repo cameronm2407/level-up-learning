@@ -4,12 +4,14 @@ export default function StageCard({
   status = "locked", // locked | current | done
   onOpen,
   disabled = false,
+  medal,
 }) {
-  const styles = {
-    locked: "bg-white border-slate-200 opacity-60",
-    current: "bg-white border-slate-200 shadow-sm ring-1 ring-slate-200",
-    done: "bg-white border-slate-200 shadow-sm",
-  }[status];
+  const styles =
+    {
+      locked: "bg-white border-slate-200 opacity-60",
+      current: "bg-white border-slate-200 shadow-sm ring-1 ring-slate-200",
+      done: "bg-white border-slate-200 shadow-sm",
+    }[status] ?? "bg-white border-slate-200";
 
   const badge = {
     locked: {
@@ -24,7 +26,15 @@ export default function StageCard({
       text: "Completed",
       cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
-  }[status];
+  }[status] ?? {
+    text: "Locked",
+    cls: "bg-slate-100 text-slate-500 border border-slate-200",
+  };
+
+  const Medal = ({ type }) => {
+    const map = { gold: "🥇", silver: "🥈", bronze: "🥉", none: "—" };
+    return <span className="text-base leading-none">{map[type] || "—"}</span>;
+  };
 
   return (
     <div
@@ -32,7 +42,7 @@ export default function StageCard({
     >
       <div className="absolute right-4 top-4">
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${badge.cls}`}
+          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${badge.cls}`}
         >
           {badge.text}
         </span>
@@ -40,6 +50,12 @@ export default function StageCard({
 
       <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
       {subtitle && <p className="mt-1 text-sm text-slate-600">{subtitle}</p>}
+
+      {medal && (
+        <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+          <span>Medal:</span> <Medal type={medal} />
+        </div>
+      )}
 
       <button
         onClick={onOpen}

@@ -141,7 +141,14 @@ export default function LessonDetail() {
               <StageCard
                 title={s.title}
                 subtitle={s.subtitle}
-                status={status}
+                status={stageStatus(s.key)}
+                medal={
+                  s.key === "quiz"
+                    ? lp?.quiz?.medal
+                    : s.key === "game"
+                    ? lp?.game?.medal
+                    : undefined
+                }
                 onOpen={() => status !== "locked" && navigate(s.to)}
                 disabled={status === "locked"}
               />
