@@ -5,6 +5,7 @@ import Dashboard from "./routes/Dashboard.jsx";
 import Lessons from "./routes/Lessons.jsx";
 import LessonDetail from "./routes/LessonDetail.jsx";
 import Slideshow from "./routes/Slideshow.jsx";
+import Quiz from "./routes/Quiz.jsx";
 import Profile from "./routes/Profile.jsx";
 import Layout from "./components/Layout.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/lessons" element={<Lessons />} />
           <Route path="/lessons/:lessonId" element={<LessonDetail />} />
           <Route path="/lessons/:lessonId/slides" element={<Slideshow />} />
+          <Route path="/lessons/:lessonId/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
       </Route>
