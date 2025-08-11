@@ -3,23 +3,27 @@ const KEY = "lul_progress";
 const DEFAULT_PROGRESS = {
   l1: {
     unlocked: true,
+    slidesDone: false,
     quiz: { bestCorrect: 0, medal: "none" },
     lessonBadge: "none",
   },
   l2: {
     unlocked: false,
+    slidesDone: false,
     quiz: { bestCorrect: 0, medal: "none" },
     game: { bestScore: 0, medal: "none" },
     lessonBadge: "none",
   },
   l3: {
     unlocked: false,
+    slidesDone: false,
     quiz: { bestCorrect: 0, medal: "none" },
     game: { bestScore: 0, medal: "none" },
     lessonBadge: "none",
   },
   l4: {
     unlocked: false,
+    slidesDone: false,
     quiz: { bestCorrect: 0, medal: "none" },
     game: { bestScore: 0, medal: "none" },
     lessonBadge: "none",
