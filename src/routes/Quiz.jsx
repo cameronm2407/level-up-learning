@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../Authentication";
-import { ensureProgress, setLessonProgress, medal } from "../lib/progress";
+import {
+  ensureProgress,
+  setLessonProgress,
+  getLessonProgress,
+  medalFromCorrect,
+} from "../lib/progress";
 import { QUIZ_POOLS, buildQuizAttempt } from "../lib/quizData";
 
 export default function Quiz() {
@@ -39,15 +44,38 @@ export default function Quiz() {
     }
   }
 
+  function updateNextLesson(currentId) {
+    const next = { l1: "l2", l2: "l3", l3: "l4" }[currentId];
+    if (next) setLessonProgress(user.username, next, { unlocked: true });
+  }
+
   function nextQuestion() {
     if (qIdx + 1 < questions.length) {
       setQIdx((i) => i + 1);
       setSelected(null);
     } else {
-      const medal = medal(correctCount);
-      setLessonProgress(user.username, lessonId, {
+      const medal = medalFromCorrect(correctCount);
+
+      const update = {
         quiz: { bestCorrect: correctCount, medal },
-      });
+      };
+
+      if (medal !== "none") {
+        if (lessonId === "l1") {
+          update.lessonBadge = medal === "gold" ? "gold" : "completed";
+          updateNextLesson(lessonId);
+        } else {
+          const gameMedal =
+            getLessonProgress(user.username, lessonId)?.game?.medal || "none";
+          if (["bronze", "silver", "gold"].includes(gameMedal)) {
+            update.lessonBadge =
+              medal === "gold" && gameMedal === "gold" ? "gold" : "completed";
+            updateNextLesson(lessonId);
+          }
+        }
+      }
+
+      setLessonProgress(user.username, lessonId, update);
       setFinished(true);
     }
   }

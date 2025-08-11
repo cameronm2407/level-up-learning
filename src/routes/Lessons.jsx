@@ -14,6 +14,18 @@ export default function Lessons() {
     setProg(p);
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    const refetch = () => setProg(ensureProgress(user.username));
+    window.addEventListener("focus", refetch);
+    window.addEventListener("storage", refetch);
+
+    return () => {
+      window.removeEventListener("focus", refetch);
+      window.removeEventListener("storage", refetch);
+    };
+  }, [user]);
+
   return (
     <div className="max-w-6xl">
       <h1 className="text-2xl font-semibold mb-6">Lessons</h1>
