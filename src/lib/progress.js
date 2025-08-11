@@ -59,7 +59,7 @@ function getAll() {
   }
 }
 
-export function medalFromCorrect(correct) {
+export function medal(correct) {
   if (correct >= 10) return "gold";
   if (correct >= 7) return "silver";
   if (correct >= 5) return "bronze";
