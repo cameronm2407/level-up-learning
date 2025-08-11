@@ -2,11 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LESSONS } from "../lib/lessons";
 import { useAuth } from "../Authentication";
-import {
-  ensureProgress,
-  getLessonProgress,
-  setLessonProgress,
-} from "../lib/progress";
+import { ensureProgress, setLessonProgress } from "../lib/progress";
+import { SLIDES } from "../lib/slides";
 
 export default function Slideshow() {
   const { lessonId } = useParams();
@@ -14,45 +11,7 @@ export default function Slideshow() {
   const { user } = useAuth();
   const [idx, setIdx] = useState(0);
 
-  const slides = useMemo(() => {
-    const l = LESSONS.find((x) => x.id === lessonId);
-    if (!l) return [];
-    if (l.id === "l1") {
-      return [
-        {
-          t: "Test title 1",
-          b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-        },
-        {
-          t: "Test title 2",
-          b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-        },
-        {
-          t: "Test title 3",
-          b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-        },
-        {
-          t: "Test title 4",
-          b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-        },
-      ];
-    }
-
-    return [
-      {
-        t: "Test title 1",
-        b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-      },
-      {
-        t: "Test title 2",
-        b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-      },
-      {
-        t: "Test title 3",
-        b: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus aut laborum dicta doloribus autem laudantium culpa esse sunt vero. Minus culpa inventore totam quasi, consequatur recusandae necessitatibus laborum sed vero!",
-      },
-    ];
-  }, [lessonId]);
+  const slides = SLIDES[lessonId] ?? [];
 
   useEffect(() => {
     if (!user) return;
@@ -60,8 +19,18 @@ export default function Slideshow() {
   }, [user]);
 
   if (!user) return null;
-  if (!slides.length) return <div className="p-4">No slides found.</div>;
-
+  if (!slides.length) {
+    return (
+      <div className="max-w-3xl">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h2 className="text-xl font-semibold">No slides found</h2>
+          <p className="text-slate-600 mt-2">
+            This lesson doesn’t have content yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const atEnd = idx === slides.length - 1;
 
   function finishSlides() {
@@ -86,6 +55,7 @@ export default function Slideshow() {
           >
             Back
           </button>
+
           {!atEnd ? (
             <button
               className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
