@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../Authentication";
 import { ensureProgress } from "../lib/progress";
 import { GAME_ROUNDS } from "../lib/gameContent";
+import { shuffle } from "../lib/quizData";
 
 export default function Game() {
   const { lessonId } = useParams();
@@ -11,24 +12,34 @@ export default function Game() {
   const [started, setStarted] = useState(false);
   const rounds = useMemo(() => GAME_ROUNDS[lessonId] ?? [], [lessonId]);
 
+  const [roundIdx, setRoundIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+
   useEffect(() => {
     if (user) ensureProgress(user.username);
   }, [user]);
 
   if (!user) return null;
 
-  function BuildRound({ round }) {
+  function BuildRound({ round, onNext }) {
     const [slots, setSlots] = useState(Array(round.slots).fill(null));
     const [used, setUsed] = useState(Array(round.pieces.length).fill(false));
 
+    const [shuffledPieces] = useState(() => shuffle(round.pieces));
+
     const nextEmpty = slots.findIndex((s) => s === null);
     const filled = nextEmpty === -1;
+
+    const [attempt, setAttempt] = useState(0); // 0 = first try, 1 = second try
+    const [checked, setChecked] = useState(false);
+    const [isCorrect, setIsCorrect] = useState(false);
 
     function pickPiece(i) {
       if (used[i]) return;
       if (nextEmpty === -1) return;
       const copy = slots.slice();
-      copy[nextEmpty] = round.pieces[i];
+      copy[nextEmpty] = shuffledPieces[i];
       setSlots(copy);
 
       const usedCopy = used.slice();
@@ -39,6 +50,13 @@ export default function Game() {
     function clearSlots() {
       setSlots(Array(round.slots).fill(null));
       setUsed(Array(round.pieces.length).fill(false));
+    }
+
+    function checkAnswer() {
+      if (slots.some((s) => s === null)) return; // must fill all
+      const ok = slots.every((s, i) => s === round.answer[i]);
+      setIsCorrect(ok);
+      setChecked(true);
     }
 
     return (
@@ -57,7 +75,7 @@ export default function Game() {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {round.pieces.map((p, i) => (
+          {shuffledPieces.map((p, i) => (
             <button
               key={i}
               onClick={() => pickPiece(i)}
@@ -74,23 +92,65 @@ export default function Game() {
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex flex-wrap gap-3 items-center">
           <button
             onClick={clearSlots}
             className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
           >
             Clear
           </button>
-          <button
-            disabled={!filled}
-            className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 disabled:opacity-40 hover:bg-slate-50"
-            onClick={() => {
-              /* next step: check answer & scoring */
-            }}
-          >
-            Next (placeholder)
-          </button>
+
+          {!checked ? (
+            <button
+              disabled={slots.some((s) => s === null)}
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 disabled:opacity-40 hover:bg-slate-50"
+              onClick={checkAnswer}
+            >
+              Check
+            </button>
+          ) : isCorrect ? (
+            <button
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
+              onClick={() =>
+                round.onNext?.(attempt === 0 ? 10 : 5) ||
+                onNext?.(attempt === 0 ? 10 : 5)
+              }
+            >
+              Next
+            </button>
+          ) : attempt === 0 ? (
+            <button
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
+              onClick={() => {
+                setAttempt(1);
+                setChecked(false);
+              }}
+            >
+              Try again
+            </button>
+          ) : (
+            <button
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
+              onClick={() => round.onNext?.(0) || onNext?.(0)}
+            >
+              Next
+            </button>
+          )}
         </div>
+
+        {checked && (
+          <div
+            className={`mt-3 text-sm ${
+              isCorrect ? "text-emerald-700" : "text-rose-700"
+            }`}
+          >
+            {isCorrect
+              ? "Nice! That’s correct."
+              : attempt === 0
+              ? "Not quite — you’ve got one more try."
+              : "We’ll learn from this and move on."}
+          </div>
+        )}
 
         {round.followUp && (
           <p className="mt-4 text-sm text-slate-600">{round.followUp}</p>
@@ -127,11 +187,51 @@ export default function Game() {
           </button>
         </div>
       ) : rounds.length > 0 ? (
-        // For now: render the first round only
-        <BuildRound round={rounds[0]} />
+        started &&
+        !finished &&
+        rounds.length > 0 && (
+          <BuildRound
+            round={rounds[roundIdx]}
+            onNext={(points) => {
+              setScore((s) => s + points);
+              if (roundIdx + 1 < rounds.length) {
+                setRoundIdx((i) => i + 1);
+              } else {
+                setFinished(true);
+              }
+            }}
+          />
+        )
       ) : (
         <div className="max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <p className="text-slate-600">No rounds configured yet.</p>
+        </div>
+      )}
+      {finished && (
+        <div className="max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h2 className="text-xl font-semibold">Game complete</h2>
+          <p className="text-slate-700 mt-2">
+            Score: <strong>{score}</strong>
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
+              onClick={() => {
+                setRoundIdx(0);
+                setScore(0);
+                setFinished(false);
+                setStarted(false);
+              }}
+            >
+              Back to intro
+            </button>
+            <Link
+              to={`/lessons/${lessonId}`}
+              className="rounded-xl px-4 py-2 text-sm font-medium border border-slate-300 hover:bg-slate-50"
+            >
+              Back to Lesson
+            </Link>
+          </div>
         </div>
       )}
     </div>
